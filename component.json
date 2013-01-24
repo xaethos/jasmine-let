@@ -3,11 +3,18 @@
   "repo": "xaethos/jasmine-let",
   "description": "Lazy variable evaluation for Jasmine specs",
   "version": "0.0.1",
-  "keywords": [],
+  "keywords": [
+    "jasmine",
+    "let",
+    "lazy"
+  ],
   "dependencies": {},
-  "development": {},
+  "development": {
+    "bestander/jasmine": "*"
+  },
   "license": "MIT",
   "scripts": [
     "index.js"
   ]
 }
+

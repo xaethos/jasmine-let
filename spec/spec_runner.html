@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="../build/build.css"></link>
+    <script src="../build/build.js"></script>
+    <script src="./jasmine.js"></script>
+    <script src="./let_spec.js"></script>
+  </head>
+  <body>
+
+    <script type="text/javascript">
+      (function () {
+       var currentWindowOnload;
+       var reporter;
+       var jasmine = require('bestander-jasmine').jasmine;
+       var jasmineEnv = jasmine.getEnv();
+       jasmineEnv.updateInterval = 1000;
+
+       reporter = new jasmine.TrivialReporter();
+
+       jasmineEnv.addReporter(reporter);
+
+       jasmineEnv.specFilter = function (spec) {
+         return reporter.specFilter(spec);
+       };
+
+       currentWindowOnload = window.onload;
+
+       window.onload = function () {
+         if (currentWindowOnload) {
+           currentWindowOnload();
+         }
+         jasmineEnv.execute();
+       };
+
+      })();
+    </script>
+
+  </body>
+</html>
