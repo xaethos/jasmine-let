@@ -1,16 +1,18 @@
-/*jslint node: true, indent: 2 */
-"use strict";
+/*jslint indent: 2 */
+/*global module */
 
 module.exports = function (jasmine) {
+  "use strict";
+
   var fn, scopes, values, currentSpecId;
 
-  fn = new Object()
-  scopes = new Object();
+  fn = {};
+  scopes = {};
 
   function declare(name, expr) {
     var suite, scope, block;
 
-    switch(typeof expr) {
+    switch (typeof expr) {
     case "function":
       block = expr;
       break;
@@ -48,15 +50,13 @@ module.exports = function (jasmine) {
     else {
       return values[key] = produceValue(spec.suite, key);
     }
-
-    return value;
   }
 
   function produceValue(suite, key) {
     var value, blocks;
 
-    while (suite != null) {
-      if (blocks = scopes[suite.id]) {
+    while (suite) {
+      if ((blocks = scopes[suite.id])) {
         if (blocks.hasOwnProperty(key)) {
           value = blocks[key]();
           break;
@@ -66,45 +66,6 @@ module.exports = function (jasmine) {
     }
 
     return value;
-  }
-
-  function evaluateAround() {
-    var suite, env;
-
-    env = jasmine.getEnv();
-    suite = env.currentSuite;
-
-    suite.beforeEach(function () {
-      var spec, blocks, values;
-
-      Object.keys(fn).forEach(function (key) {
-        delete fn[key];
-      });
-
-      spec = env.currentSpec;
-      values = specValues(spec);
-      console.log("before", spec)
-      for (var iSuite = spec.suite; iSuite !== null; iSuite = iSuite.parentSuite) {
-        console.log("looking for declarations in", iSuite)
-        blocks = scopes[iSuite.id];
-        if (!blocks) continue;
-
-        Object.keys(blocks).forEach(function (key) {
-          console.log("...", key)
-          if (!values.hasOwnProperty(key)) {
-            console.log("   not evaled yet")
-            fn[key] = values[key] = blocks[key]();
-          }
-        });
-      }
-    });
-
-    suite.afterEach(function () {
-      Object.keys(fn).forEach(function (key) {
-        delete fn[key];
-      });
-      attachMethods();
-    });
   }
 
   function specValues(spec) {
@@ -128,7 +89,6 @@ module.exports = function (jasmine) {
 
   function attachMethods() {
     fn.let = declare;
-    fn.evaluateBefore = evaluateAround;
   }
 
   fn = get;
