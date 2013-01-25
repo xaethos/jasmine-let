@@ -29,12 +29,14 @@ module.exports = function (jasmine) {
     scope = scopes[suite.id] || (scopes[suite.id] = {});
     scope[name] = block;
 
-    fn.__defineGetter__(name, function () {
-      return get(name);
-    });
-    fn.__defineSetter__(name, function (val) {
-      values = specValues(jasmine.getEnv().currentSpec);
-      values[name] = val;
+    Object.defineProperty(fn, name, {
+      enumerable: true,
+      configurable: true,
+      get: function () { return get(name); },
+      set: function (val) {
+        values = specValues(jasmine.getEnv().currentSpec);
+        values[name] = val;
+      }
     });
   }
 
