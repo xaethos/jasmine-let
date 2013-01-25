@@ -99,9 +99,7 @@ describe("jasmine-let", function() {
     });
   });
 
-  describe("#evaluateBefore", function() {
-    j.evaluateBefore();
-
+  describe("properties", function() {
     var callCount = 0;
 
     j.let('foo', function() {
@@ -109,14 +107,18 @@ describe("jasmine-let", function() {
       return "lorem ipsum";
     })
 
-    it("evaluates all declarations before the example", function() {
+    it("let defines getters", function() {
+      expect(callCount).toEqual(0);
+      expect(j.foo).toEqual("lorem ipsum");
       expect(callCount).toEqual(1);
-      j('foo');
+
+      j.foo
       expect(callCount).toEqual(1);
     });
 
-    it("makes values available as properties", function() {
-      expect(j.foo).toEqual("lorem ipsum");
+    it("let defines setters", function() {
+      j.foo = "some string"
+      expect(j.foo).toEqual("some string");
     });
   });
 

@@ -4,7 +4,8 @@
 module.exports = function (jasmine) {
   var fn, scopes, values, currentSpecId;
 
-  scopes = {};
+  fn = new Object()
+  scopes = new Object();
 
   function declare(name, expr) {
     var suite, scope, block;
@@ -25,6 +26,14 @@ module.exports = function (jasmine) {
 
     scope = scopes[suite.id] || (scopes[suite.id] = {});
     scope[name] = block;
+
+    fn.__defineGetter__(name, function () {
+      return get(name);
+    });
+    fn.__defineSetter__(name, function (val) {
+      values = specValues(jasmine.getEnv().currentSpec);
+      values[name] = val;
+    });
   }
 
   function get(key) {
