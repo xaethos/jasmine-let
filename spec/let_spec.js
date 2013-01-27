@@ -113,7 +113,7 @@ describe("jasmine-let", function() {
 
   });
 
-  describe("declaration overrides", function() {
+  describe("definition overrides", function() {
     var callCount = 0;
 
     jlet('foo', function() {
@@ -121,7 +121,7 @@ describe("jasmine-let", function() {
       return "bad";
     });
 
-    describe("when nested suite redeclares a name", function() {
+    describe("when nested suite redefines a name", function() {
       jlet('foo', function() { return "good"; });
 
       it("uses the innermost definition", function() {
@@ -132,6 +132,19 @@ describe("jasmine-let", function() {
         ns.foo;
         expect(callCount).toEqual(0);
       });
+    });
+  });
+
+  describe("definition interdependency", function () {
+    var callOrder = [];
+
+    jlet('foo', function () { callOrder.push("foo"); return 13; });
+    jlet('bar', function () { callOrder.push("bar"); return ns.foo + ns.baz; });
+    jlet('baz', function () { callOrder.push("baz"); return 17; });
+
+    it("works", function () {
+      expect(ns.bar).toEqual(30);
+      expect(callOrder).toEqual(["bar", "foo", "baz"]);
     });
   });
 
