@@ -1,124 +1,137 @@
-var j = require('jasmine-let')(jasmine);
+/*jslint expr: true */
+
+var ns = { theAnswer: 42 };
+var jlet = require('jasmine-let')(jasmine, ns);
 
 describe("jasmine-let", function() {
 
-  describe("function", function() {
+  describe("named property", function() {
 
-    describe("when #let has been called with a primitive", function() {
-      j.let('foo', 13);
-      j.let('bar', "string");
-      j.let('baz', true);
-      j.let('cat', undefined);
-      j.let('dog', null);
-
-      it("returns that value", function() {
-        expect(j('foo')).toBe(13);
-        expect(j('bar')).toBe("string");
-        expect(j('baz')).toBe(true);
-        expect(j('cat')).toBe(void 0);
-        expect(j('dog')).toBe(null);
-      });
-
-    });
-
-    describe("when #let has been called with a function", function() {
+    describe("definition", function() {
       var callCount = 0;
-      j.let('foo', function() {
-        ++callCount;
-        return {};
+
+      jlet('foo', null);
+
+      it("has getter", function() {
+        expect(ns.hasOwnProperty('foo')).toBeTruthy();
       });
 
-      it("returns the result of calling it", function() {
-        expect(j('foo')).toEqual({});
-        expect(callCount).toEqual(1);
+      it("has setter", function() {
+        ns.foo = "some string";
+        expect(ns.foo).toEqual("some string");
       });
 
-      it("calls the function only once per example and caches the result", function() {
-        value = j('foo');
-        expect(value).toEqual({});
-        expect(callCount).toEqual(2);
-
-        expect(j('foo')).toBe(value);
-        expect(callCount).toEqual(2);
+      it("is configurable", function() {
+        delete ns.foo;
+        expect(ns.hasOwnProperty('foo')).toBeFalsy();
       });
 
+      it("is enumerable", function() {
+        expect(Object.keys(ns)).toContain('foo');
+      });
     });
 
-    describe("when #let has been called with an object", function() {
-      var obj = { a: true, b: 2, c: "three", nested: {} }
-      j.let('foo', obj);
-
-      it("returns a shallow clone", function() {
-        expect(j('foo')).toEqual(obj);
-        expect(j('foo')).not.toBe(obj);
-        expect(j('foo').nested).toBe(obj.nested);
+    describe("cleanup", function() {
+      it("removes defined properties between specs", function() {
+        expect(ns.hasOwnProperty('foo')).toBeFalsy();
       });
 
+      it("it only removes properties defined by jasmine-let", function() {
+        expect(ns.theAnswer).toBe(42);
+      });
     });
 
+  });
+
+  describe("when expression is a primitive", function() {
+    jlet('foo', 13);
+    jlet('bar', "string");
+    jlet('baz', true);
+    jlet('cat', undefined);
+    jlet('dog', null);
+
+    it("returns that value", function() {
+      expect(ns.foo).toBe(13);
+      expect(ns.bar).toBe("string");
+      expect(ns.baz).toBe(true);
+      expect(ns.cat).toBe(void 0);
+      expect(ns.dog).toBe(null);
+    });
+  });
+
+  describe("when expression is a function", function() {
+    var callCount = 0;
+
+    jlet('foo', function() {
+      ++callCount;
+      return {};
+    });
+
+    it("returns the result of calling it", function() {
+      expect(ns.foo).toEqual({});
+      expect(callCount).toEqual(1);
+    });
+
+    it("calls the function only once per example and caches the result", function() {
+      value = ns.foo;
+      expect(value).toEqual({});
+      expect(callCount).toEqual(2);
+
+      expect(ns.foo).toBe(value);
+      expect(callCount).toEqual(2);
+    });
+  });
+
+  describe("when expression is an object", function() {
+    var obj = { a: true, b: 2, c: "three", nested: {} };
+
+    jlet('foo', obj);
+
+    it("returns the same instance", function() {
+      expect(ns.foo).toBe(obj);
+    });
   });
 
   describe("suite sandboxing", function() {
 
     describe("a suite declared before", function() {
-      j.let("foo", 1);
+      jlet("foo", 1);
     });
 
     describe("within a describe block", function() {
-      j.let("foo", 2);
+      jlet("foo", 2);
 
-      it("keeps variables isolated", function() {
-        expect(j('foo')).toEqual(2);
+      it("keeps declarations isolated", function() {
+        expect(ns.foo).toEqual(2);
       });
 
     });
 
     describe("a suite declared after", function() {
-      j.let("foo", 3);
+      jlet("foo", 3);
     });
 
   });
 
-  describe("`let` overrides", function() {
+  describe("declaration overrides", function() {
     var callCount = 0;
-    j.let('foo', function() {
+
+    jlet('foo', function() {
       ++callCount;
       return "bad";
-    })
+    });
 
-    describe("when nested `describe` redeclares a name", function() {
-      j.let('foo', function() { return "good"; });
+    describe("when nested suite redeclares a name", function() {
+      jlet('foo', function() { return "good"; });
 
       it("uses the innermost definition", function() {
-        expect(j('foo')).toEqual("good");
+        expect(ns.foo).toEqual("good");
       });
-      it("never evaluates the external let", function() {
-        j('foo');
+
+      it("never evaluates the external definition", function() {
+        ns.foo;
         expect(callCount).toEqual(0);
       });
-    });
-  });
-
-  describe("properties", function() {
-    var callCount = 0;
-
-    j.let('foo', function() {
-      ++callCount;
-      return "lorem ipsum";
-    })
-
-    it("let defines getters", function() {
-      expect(callCount).toEqual(0);
-      expect(j.foo).toEqual("lorem ipsum");
-      expect(callCount).toEqual(1);
-
-      j.foo
-      expect(callCount).toEqual(1);
-    });
-
-    it("let defines setters", function() {
-      j.foo = "some string"
-      expect(j.foo).toEqual("some string");
     });
   });
 

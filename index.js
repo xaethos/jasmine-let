@@ -1,101 +1,80 @@
 /*jslint indent: 2 */
 /*global module */
 
-module.exports = function (jasmine) {
+module.exports = function (jasmine, namespace) {
   "use strict";
 
-  var fn, scopes, values, currentSpecId;
+  var env, scopes, propertyNames;
 
-  fn = {};
+  env = jasmine.getEnv();
   scopes = {};
+  propertyNames = [];
 
   function declare(name, expr) {
     var suite, scope, block;
 
-    switch (typeof expr) {
-    case "function":
+    if (typeof expr === "function") {
       block = expr;
-      break;
-    case "object":
-      block = function () { return shallowCopy(expr); };
-      break;
-    default:
+    } else {
       block = function () { return expr; };
     }
 
-    suite = jasmine.getEnv().currentSuite;
-    if (suite === null) throw new Error('let called with no suite');
+    suite = env.currentSuite;
 
     scope = scopes[suite.id] || (scopes[suite.id] = {});
     scope[name] = block;
+  }
 
-    Object.defineProperty(fn, name, {
-      enumerable: true,
-      configurable: true,
-      get: function () { return get(name); },
-      set: function (val) {
-        values = specValues(jasmine.getEnv().currentSpec);
-        values[name] = val;
+  function makeGetter(name, values, fn) {
+    return function () {
+      if (values.hasOwnProperty(name)) {
+        return values[name];
       }
-    });
+      return values[name] = fn();
+    };
   }
 
-  function get(key) {
-    var spec, suite, values;
-
-    spec = jasmine.getEnv().currentSpec;
-    values = specValues(spec);
-
-    if (values.hasOwnProperty(key)) {
-      return values[key];
-    }
-    else {
-      return values[key] = produceValue(spec.suite, key);
-    }
+  function makeSetter(name, values) {
+    return function (val) { values[name] = val; };
   }
 
-  function produceValue(suite, key) {
-    var value, blocks;
+  function defineProperties() {
+    var spec, suite, declarations, values;
 
-    while (suite) {
-      if ((blocks = scopes[suite.id])) {
-        if (blocks.hasOwnProperty(key)) {
-          value = blocks[key]();
-          break;
-        }
-      }
-      suite = suite.parentSuite;
+    spec = env.currentSpec;
+    values = {};
+
+    function defineProperty(name) {
+      if (propertyNames.indexOf(name) >= 0) { return; }
+
+      propertyNames.push(name);
+      Object.defineProperty(namespace, name, {
+        enumerable: true,
+        configurable: true,
+        get: makeGetter(name, values, declarations[name]),
+        set: makeSetter(name, values)
+      });
     }
 
-    return value;
-  }
+    for (suite = spec.suite; suite; suite = suite.parentSuite) {
+      declarations = scopes[suite.id];
+      if (!declarations) continue;
 
-  function specValues(spec) {
-    if (currentSpecId !== spec.id) {
-      currentSpecId = spec.id;
-      values = {};
+      Object.keys(declarations).forEach(defineProperty);
     }
-    return values;
   }
 
-  function shallowCopy(obj) {
-    if (obj === null) return null;
+  function deleteProperties() {
+    var name;
 
-    var copy = new obj.constructor();
-    Object.keys(obj).forEach(function (key) {
-      copy[key] = obj[key];
-    });
-
-    return copy;
+    while ((name = propertyNames.pop(name))) {
+      delete namespace[name];
+    }
   }
 
-  function attachMethods() {
-    fn.let = declare;
-  }
+  env.beforeEach(defineProperties);
+  env.afterEach(deleteProperties);
 
-  fn = get;
-  attachMethods();
-
-  return fn;
+  return declare;
 };
 

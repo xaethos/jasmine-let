@@ -2,7 +2,7 @@
   "name": "jasmine-let",
   "repo": "xaethos/jasmine-let",
   "description": "Lazy variable evaluation for Jasmine specs",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "keywords": [
     "jasmine",
     "let",
