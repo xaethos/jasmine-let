@@ -1,5 +1,5 @@
 
-build: components index.js
+build: components jasmine-let.js
 	@component build --dev
 
 components: component.json

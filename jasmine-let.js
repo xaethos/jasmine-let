@@ -78,5 +78,7 @@ function jasmineLet(jasmine, namespace) {
   return declare;
 }
 
-if (module) { module.exports = jasmineLet; }
+if (typeof module !== 'undefined') {
+  module.exports = jasmineLet;
+}
 

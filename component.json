@@ -8,13 +8,14 @@
     "let",
     "lazy"
   ],
+  "main": "jasmine-let.js",
+  "scripts": [
+    "jasmine-let.js"
+  ],
   "dependencies": {},
   "development": {
     "bestander/jasmine": "*"
   },
-  "license": "MIT",
-  "scripts": [
-    "index.js"
-  ]
+  "license": "MIT"
 }
 

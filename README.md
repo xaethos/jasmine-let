@@ -9,12 +9,24 @@
 
 ## Example
 
+Get a reference to the jasmine let function.  As a Component:
+
 ```js
 var jlet = require('jasmine-let')(
   jasmine, // A reference to jasmine
   window   // The object where the variables should be attached
 );
+```
 
+Or if you simply link jasmine-let.js:
+
+```js
+var jlet = jasmineLet(jasmine, window);
+```
+
+That's it!  Use it in your specs.
+
+```js
 describe("A lazily evaluated variable", function () {
 
   jlet("fooSquare", function () { return foo * foo; });
