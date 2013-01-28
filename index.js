@@ -1,7 +1,7 @@
 /*jslint indent: 2 */
 /*global module */
 
-module.exports = function (jasmine, namespace) {
+function jasmineLet(jasmine, namespace) {
   "use strict";
 
   var env, scopes, propertyNames;
@@ -76,5 +76,7 @@ module.exports = function (jasmine, namespace) {
   env.afterEach(deleteProperties);
 
   return declare;
-};
+}
+
+if (module) { module.exports = jasmineLet; }
 
