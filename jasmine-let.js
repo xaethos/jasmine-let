@@ -10,8 +10,12 @@ function jasmineLet(jasmine, namespace) {
   scopes = {};
   propertyNames = [];
 
-  function declare(name, expr) {
+  function declare(name, expr, options) {
     var suite, scope, block;
+
+    if (options === null || typeof options !== "object") {
+      options = {};
+    }
 
     if (typeof expr === "function") {
       block = expr;
@@ -22,7 +26,7 @@ function jasmineLet(jasmine, namespace) {
     suite = env.currentSuite;
 
     scope = scopes[suite.id] || (scopes[suite.id] = {});
-    scope[name] = block;
+    scope[name] = { block: block, preEvaluate: !!options.preEvaluate };
   }
 
   function makeGetter(name, values, fn) {
@@ -39,10 +43,11 @@ function jasmineLet(jasmine, namespace) {
   }
 
   function defineProperties() {
-    var spec, suite, declarations, values;
+    var spec, suite, declarations, values, preEvaluate;
 
     spec = env.currentSpec;
     values = {};
+    preEvaluate = [];
 
     function defineProperty(name) {
       if (propertyNames.indexOf(name) >= 0) { return; }
@@ -51,9 +56,13 @@ function jasmineLet(jasmine, namespace) {
       Object.defineProperty(namespace, name, {
         enumerable: true,
         configurable: true,
-        get: makeGetter(name, values, declarations[name]),
+        get: makeGetter(name, values, declarations[name].block),
         set: makeSetter(name, values)
       });
+      if (declarations[name].preEvaluate) {
+        preEvaluate.push(name);
+        //values[name] = declarations[name].block();
+      }
     }
 
     for (suite = spec.suite; suite; suite = suite.parentSuite) {
@@ -62,6 +71,11 @@ function jasmineLet(jasmine, namespace) {
 
       Object.keys(declarations).forEach(defineProperty);
     }
+
+    preEvaluate.forEach(function (name) {
+      /*jslint expr:true */
+      namespace[name];
+    });
   }
 
   function deleteProperties() {

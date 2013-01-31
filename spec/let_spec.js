@@ -148,5 +148,27 @@ describe("jasmine-let", function() {
     });
   });
 
+  describe("options", function () {
+
+    describe("preEvaluate [boolean]", function () {
+      var evaluated = {
+        foo: false,
+        bar: false,
+        baz: false
+      };
+
+      jlet('foo', function () { evaluated.foo = true; }, { preEvaluate: true });
+      jlet('bar', function () { evaluated.bar = true; }, { preEvaluate: false });
+      jlet('baz', function () { evaluated.baz = true; });
+
+      it("evaluates a definition before the specs (default: false)", function () {
+        expect(evaluated.foo).toBeTruthy();
+        expect(evaluated.bar).toBeFalsy();
+        expect(evaluated.baz).toBeFalsy();
+      });
+    });
+
+  });
+
 });
 
