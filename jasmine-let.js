@@ -26,7 +26,14 @@ function jasmineLet(jasmine, namespace) {
     suite = env.currentSuite;
 
     scope = scopes[suite.id] || (scopes[suite.id] = {});
-    scope[name] = { block: block, preEvaluate: !!options.preEvaluate };
+    scope[name] = block;
+
+    if (options.evaluateBefore) {
+      suite.beforeEach(function () {
+        /*jslint expr:true */
+        namespace[name];
+      });
+    }
   }
 
   function makeGetter(name, values, fn) {
@@ -43,11 +50,10 @@ function jasmineLet(jasmine, namespace) {
   }
 
   function defineProperties() {
-    var spec, suite, declarations, values, preEvaluate;
+    var spec, suite, declarations, values;
 
     spec = env.currentSpec;
     values = {};
-    preEvaluate = [];
 
     function defineProperty(name) {
       if (propertyNames.indexOf(name) >= 0) { return; }
@@ -56,13 +62,9 @@ function jasmineLet(jasmine, namespace) {
       Object.defineProperty(namespace, name, {
         enumerable: true,
         configurable: true,
-        get: makeGetter(name, values, declarations[name].block),
+        get: makeGetter(name, values, declarations[name]),
         set: makeSetter(name, values)
       });
-      if (declarations[name].preEvaluate) {
-        preEvaluate.push(name);
-        //values[name] = declarations[name].block();
-      }
     }
 
     for (suite = spec.suite; suite; suite = suite.parentSuite) {
@@ -71,11 +73,6 @@ function jasmineLet(jasmine, namespace) {
 
       Object.keys(declarations).forEach(defineProperty);
     }
-
-    preEvaluate.forEach(function (name) {
-      /*jslint expr:true */
-      namespace[name];
-    });
   }
 
   function deleteProperties() {
