@@ -49,6 +49,21 @@ describe("A lazily evaluated variable", function () {
 });
 ```
 
+When called with the `evaluateBefore: true` option, it will evaluate the
+declaration in a before the spec (i.e. it behaves like RSpec's `let!`).
+
+```js
+describe("evaluateBefore", function () {
+  var evaluated = false;
+
+  jlet('foo', function () { evaluated = true; }, { evaluateBefore: true });
+
+  it("evaluates a definition before the specs (default: false)", function () {
+    expect(evaluated).toBeTruthy();
+  });
+});
+```
+
 ## License
 
   MIT.  See `LICENSE` file.
