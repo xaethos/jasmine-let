@@ -156,15 +156,32 @@ describe("jasmine-let", function() {
         bar: false,
         baz: false
       };
+      var beforeEachEvaluated = false;
 
       jlet('foo', function () { evaluated.foo = true; }, { preEvaluate: true });
       jlet('bar', function () { evaluated.bar = true; }, { preEvaluate: false });
       jlet('baz', function () { evaluated.baz = true; });
 
+      beforeEach(function () {
+        beforeEachEvaluated = true;
+      });
+
+      afterEach(function () {
+        beforeEachEvaluated = false;
+      });
+
       it("evaluates a definition before the specs (default: false)", function () {
         expect(evaluated.foo).toBeTruthy();
         expect(evaluated.bar).toBeFalsy();
         expect(evaluated.baz).toBeFalsy();
+      });
+
+      describe("when outer suites have beforeEach blocks", function () {
+        jlet('evaluatedafter', function () { return beforeEachEvaluated; }, { preEvaluate: true });
+
+        it("evaluates those blocks before the definition", function () {
+          expect(ns.evaluatedafter).toBeTruthy();
+        });
       });
     });
 
