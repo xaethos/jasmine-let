@@ -28,7 +28,7 @@ function jasmineLet(jasmine, namespace) {
     scope = scopes[suite.id] || (scopes[suite.id] = {});
     scope[name] = block;
 
-    if (options.preEvaluate) {
+    if (options.evaluateBefore) {
       suite.beforeEach(function () {
         /*jslint expr:true */
         namespace[name];

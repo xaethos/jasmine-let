@@ -150,7 +150,7 @@ describe("jasmine-let", function() {
 
   describe("options", function () {
 
-    describe("preEvaluate [boolean]", function () {
+    describe("evaluateBefore [boolean]", function () {
       var evaluated = {
         foo: false,
         bar: false,
@@ -158,8 +158,8 @@ describe("jasmine-let", function() {
       };
       var beforeEachEvaluated = false;
 
-      jlet('foo', function () { evaluated.foo = true; }, { preEvaluate: true });
-      jlet('bar', function () { evaluated.bar = true; }, { preEvaluate: false });
+      jlet('foo', function () { evaluated.foo = true; }, { evaluateBefore: true });
+      jlet('bar', function () { evaluated.bar = true; }, { evaluateBefore: false });
       jlet('baz', function () { evaluated.baz = true; });
 
       beforeEach(function () {
@@ -177,7 +177,7 @@ describe("jasmine-let", function() {
       });
 
       describe("when outer suites have beforeEach blocks", function () {
-        jlet('evaluatedafter', function () { return beforeEachEvaluated; }, { preEvaluate: true });
+        jlet('evaluatedafter', function () { return beforeEachEvaluated; }, { evaluateBefore: true });
 
         it("evaluates those blocks before the definition", function () {
           expect(ns.evaluatedafter).toBeTruthy();
